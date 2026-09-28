@@ -90,7 +90,7 @@ solver.suggest_value(x, 20.0)
 - `Solver::add_constraint`, `remove_constraint`, `has_constraint`.
 - `Solver::add_edit_variable`, `remove_edit_variable`, `has_edit_variable`, `suggest_value`.
 - `Solver::value`, `reset`, `statistics`.
-- `Expression::value` and `Constraint::violation`: inspect solved residuals.
+- `Expression::value` and `Constraint::violation`: inspect solved residuals; these can raise `InvalidNumber` or `NumericalFailure` rather than letting overflow/NaN look like a satisfied inequality.
 
 Strengths: `required()` is hard; `strong()` = 1,000,000, `medium()` = 1,000, `weak()` = 1. Soft constraints minimize weighted L1 violations. These are **scalar weights, not infinite lexicographic priorities**: enough weak constraints can outweigh one strong constraint. Custom finite strengths in `[0, required()]` are accepted; an edit cannot be required.
 
@@ -109,7 +109,9 @@ Typed errors cover duplicate/unknown constraints and edit variables, unsatisfiab
 
 ## Tests and reproducibility
 
-The tests include upstream behavior ports, independent API/error-recovery regressions, and generated oracle scenarios. To reproduce oracle expectations:
+**232 tests pass.** This includes 192 independent oracle scenarios with 7,344 checked operation snapshots and 768 uniquely determined snapshots, 10 upstream behavior ports, 22 API/recovery tests, 7 numeric/tableau regressions, and one public-method compatibility test. See [verification evidence](docs/VERIFICATION.md).
+
+To reproduce oracle expectations:
 
 ```bash
 python -m pip install kiwisolver==1.4.9
