@@ -11,6 +11,12 @@ pub(all) enum Relation {
 } derive(Eq, @debug.Debug)
 
 ///|
+pub extend Relation with Eq::{equal, not_equal}
+
+///|
+pub extend Relation with @debug.Debug::{to_repr}
+
+///|
 /// A constraint handle has identity: keep it to remove the same constraint.
 pub struct Constraint {
   priv id : Int
@@ -54,3 +60,9 @@ pub(all) suberror SolverError {
   NumericalFailure(String)
   PivotLimit
 } derive(Eq, @debug.Debug)
+
+///|
+pub extend SolverError with Eq::{equal, not_equal}
+
+///|
+pub extend SolverError with @debug.Debug::{to_repr}

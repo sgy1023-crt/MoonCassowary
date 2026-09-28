@@ -11,6 +11,15 @@ pub struct Variable {
 } derive(Eq, Hash, @debug.Debug)
 
 ///|
+pub extend Variable with Eq::{equal, not_equal}
+
+///|
+pub extend Variable with Hash::{hash, hash_combine}
+
+///|
+pub extend Variable with @debug.Debug::{to_repr}
+
+///|
 let identity_counter : Ref[Int] = { val: 0, }
 
 ///|

@@ -26,6 +26,9 @@ pub(all) suberror SolverError {
   NumericalFailure(String)
   PivotLimit
 } derive(Eq, @debug.Debug)
+pub fn SolverError::equal(Self, Self) -> Bool
+pub fn SolverError::not_equal(Self, Self) -> Bool
+pub fn SolverError::to_repr(Self) -> @debug.Repr
 
 // Types and methods
 pub struct Constraint {
@@ -48,6 +51,9 @@ pub(all) enum Relation {
   LessEqual
   GreaterEqual
 } derive(Eq, @debug.Debug)
+pub fn Relation::equal(Self, Self) -> Bool
+pub fn Relation::not_equal(Self, Self) -> Bool
+pub fn Relation::to_repr(Self) -> @debug.Repr
 
 pub struct Solver {
   // private fields
@@ -71,12 +77,20 @@ pub struct Statistics {
   rows : Int
   pivots : Int
 } derive(Eq, @debug.Debug)
+pub fn Statistics::equal(Self, Self) -> Bool
+pub fn Statistics::not_equal(Self, Self) -> Bool
+pub fn Statistics::to_repr(Self) -> @debug.Repr
 
 pub struct Variable {
   name : String
   // private fields
 } derive(Eq, Hash, @debug.Debug)
+pub fn Variable::equal(Self, Self) -> Bool
+pub fn Variable::hash(Self) -> Int
+pub fn Variable::hash_combine(Self, Hasher) -> Unit
 pub fn Variable::new(String) -> Self
+pub fn Variable::not_equal(Self, Self) -> Bool
+pub fn Variable::to_repr(Self) -> @debug.Repr
 
 // Type aliases
 

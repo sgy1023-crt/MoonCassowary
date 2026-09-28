@@ -23,6 +23,12 @@ pub struct Statistics {
 } derive(Eq, @debug.Debug)
 
 ///|
+pub extend Statistics with Eq::{equal, not_equal}
+
+///|
+pub extend Statistics with @debug.Debug::{to_repr}
+
+///|
 pub fn Solver::new() -> Solver {
   { state: Tableau::new(), }
 }
