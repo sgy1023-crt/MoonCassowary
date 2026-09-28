@@ -1,0 +1,5 @@
+import {
+  "sgy1023-crt/cassowary",
+}
+
+pkgtype(kind: "executable")

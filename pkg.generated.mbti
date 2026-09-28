@@ -1,0 +1,83 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "sgy1023-crt/cassowary"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn medium() -> Double
+
+pub fn required() -> Double
+
+pub fn strong() -> Double
+
+pub fn weak() -> Double
+
+// Errors
+pub(all) suberror SolverError {
+  DuplicateConstraint
+  UnknownConstraint
+  UnsatisfiableConstraint
+  DuplicateEditVariable
+  UnknownEditVariable
+  InvalidStrength
+  InvalidNumber
+  NumericalFailure(String)
+  PivotLimit
+} derive(Eq, @debug.Debug)
+
+// Types and methods
+pub struct Constraint {
+  relation : Relation
+  strength : Double
+  // private fields
+}
+pub fn Constraint::new(Expression, Relation, strength? : Double) -> Self
+pub fn Constraint::violation(Self, Solver) -> Double raise SolverError
+
+pub struct Expression {
+  constant : Double
+  // private fields
+}
+pub fn Expression::new(Array[(Variable, Double)], constant? : Double) -> Self
+pub fn Expression::value(Self, Solver) -> Double raise SolverError
+
+pub(all) enum Relation {
+  Equal
+  LessEqual
+  GreaterEqual
+} derive(Eq, @debug.Debug)
+
+pub struct Solver {
+  // private fields
+}
+pub fn Solver::add_constraint(Self, Constraint) -> Unit raise SolverError
+pub fn Solver::add_edit_variable(Self, Variable, Double) -> Unit raise SolverError
+pub fn Solver::has_constraint(Self, Constraint) -> Bool
+pub fn Solver::has_edit_variable(Self, Variable) -> Bool
+pub fn Solver::new() -> Self
+pub fn Solver::remove_constraint(Self, Constraint) -> Unit raise SolverError
+pub fn Solver::remove_edit_variable(Self, Variable) -> Unit raise SolverError
+pub fn Solver::reset(Self) -> Unit
+pub fn Solver::statistics(Self) -> Statistics
+pub fn Solver::suggest_value(Self, Variable, Double) -> Unit raise SolverError
+pub fn Solver::value(Self, Variable) -> Double
+
+pub struct Statistics {
+  constraints : Int
+  edits : Int
+  variables : Int
+  rows : Int
+  pivots : Int
+} derive(Eq, @debug.Debug)
+
+pub struct Variable {
+  name : String
+  // private fields
+} derive(Eq, Hash, @debug.Debug)
+pub fn Variable::new(String) -> Self
+
+// Type aliases
+
+// Traits

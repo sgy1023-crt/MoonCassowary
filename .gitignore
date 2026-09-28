@@ -1,0 +1,8 @@
+_build/
+.mooncakes/
+target/
+.venv/
+.reference/
+__pycache__/
+*.pyc
+.DS_Store
