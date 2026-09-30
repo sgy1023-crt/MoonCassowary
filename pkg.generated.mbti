@@ -62,6 +62,8 @@ pub fn Solver::add_constraint(Self, Constraint) -> Unit raise SolverError
 pub fn Solver::add_edit_variable(Self, Variable, Double) -> Unit raise SolverError
 pub fn Solver::has_constraint(Self, Constraint) -> Bool
 pub fn Solver::has_edit_variable(Self, Variable) -> Bool
+pub fn Solver::is_satisfied(Self, tolerance? : Double) -> Bool raise SolverError
+pub fn Solver::maximum_required_violation(Self) -> Double raise SolverError
 pub fn Solver::new() -> Self
 pub fn Solver::remove_constraint(Self, Constraint) -> Unit raise SolverError
 pub fn Solver::remove_edit_variable(Self, Variable) -> Unit raise SolverError
