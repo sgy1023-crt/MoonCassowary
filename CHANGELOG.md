@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Fix the benchmark's required fixed-width constraint so the feasible-resize scenario actually resizes. Validate solved widths, column sums, minimums and residuals on every edit; separate clamped scenarios, exclude setup/warmup and report three samples. Propagate failures and never fabricate zero-time throughput.
+- Correct equal-strength edit documentation and tests: compatible suggestions can both hold; conflicting suggestions minimize weighted L1 error and can have multiple optima. Add order-independent objective and custom-weight regressions.
+- Assert the multi-panel demo's resize, drag and clamping behavior, preserve fractional sizes, propagate errors, and execute it on every CI target. Run native benchmarks in release mode.
+- Require finite, nonnegative `Solver::is_satisfied` tolerances; invalid values raise `InvalidNumber` without changing solver state. Zero remains valid.
+- 252 tests total. Refresh current verification evidence and distinguish historical 0.1.0/0.2.0 results.
+
 ## 0.2.0
 
 - Add `Solver::maximum_required_violation` and `Solver::is_satisfied` so callers can assert a solved layout without re-deriving residuals.

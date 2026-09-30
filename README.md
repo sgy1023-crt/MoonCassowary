@@ -30,7 +30,7 @@ moon run examples/equations
 moon run examples/split_pane
 moon run examples/panels
 moon run examples/recovery
-moon run bench/main --target native   # incremental edit throughput
+moon run bench/main --target native --release   # edits plus per-edit validation
 ```
 
 There are no third-party runtime dependencies. The library and examples support `wasm-gc`, `js`, and `native`; native builds require a C toolchain (MSVC on Windows is supported).
@@ -115,7 +115,9 @@ Typed errors cover duplicate/unknown constraints and edit variables, unsatisfiab
 
 ## Tests and reproducibility
 
-**245 tests pass.** This includes 192 independent oracle scenarios with 7,344 checked operation snapshots and 768 uniquely determined snapshots, 10 upstream behavior ports, 22 API/recovery tests, 5 satisfaction-assertion tests, 4 constraint-inspection tests, 4 competing-edit tests, 7 numeric/tableau regressions, and one public-method compatibility test. See [verification evidence](docs/VERIFICATION.md).
+**252 tests pass on each of wasm-gc, js and native.** This includes 192 independent oracle scenarios with 7,344 checked operation snapshots and 768 uniquely determined snapshots, 10 upstream behavior ports, 22 API/recovery tests, 8 satisfaction-assertion tests, 4 constraint-inspection tests, 6 competing-edit tests, 7 numeric/tableau regressions, one public-method compatibility test and 2 benchmark-model tests. See [verification evidence](docs/VERIFICATION.md).
+
+The benchmark reports feasible resizing separately from minimum-clamped edits, with 128 warmup edits and three 2,000-edit samples per scenario/size. Timing includes per-edit validation, excludes setup/warmup, and uses millisecond wall-clock readings. It is not a cross-library speed comparison; old 0.2.0 numbers from a hard-fixed window do not measure actual resizing.
 
 To reproduce oracle expectations:
 

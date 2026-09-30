@@ -2,15 +2,18 @@
 
 This records completed checks, not a prediction of competition acceptance.
 
-## Automated checks
+## Current local verification (2026-09-30)
 
-[Successful CI run 36445064001](https://github.com/sgy1023-crt/MoonCassowary/actions/runs/36445064001) verifies the solver at commit `f4f9366`:
+The fixes through `70fce82` passed the following checks on Windows 11 x64, Intel Core i5-12450H, MSVC, `moon 0.1.20260904` and `moonc v0.10.12+1634b282e`:
 
-- Ubuntu: `wasm-gc`, `js`, `native`; Windows: `native`.
-- Each target: strict type check, actual build, test execution and all three examples.
-- Separate reproducibility job: `moon fmt --check`, generated interface comparison, Python `kiwisolver==1.4.9` fixture regeneration in check-only mode.
+- `moon fmt --check` and `moon info`, followed by a clean generated-interface diff.
+- `moon check --deny-warn`, `moon build`, and `moon test --deny-warn` on each of `wasm-gc`, `js`, and `native`.
+- **252 tests passed, zero failures, on each backend.**
+- All four examples actually executed on each backend: equations, split_pane, panels, recovery.
+- `python tests/oracle/generate.py --check` passed with test-only `kiwisolver==1.4.9`; no fixture drift.
+- The release-mode native benchmark executed 18 samples with per-edit assertions enabled.
 
-The first CI run failed before tests because the newer compiler requires explicit promotion of derived public trait methods. Explicit `pub extend` declarations and a public-method regression fixed it; warnings were not disabled.
+The CI workflow now executes the asserted panels example on Ubuntu `wasm-gc` / `js` / `native` and Windows `native`, plus release-mode benchmarks on both native jobs. A successful run for the final release will be recorded separately after the push, not inferred from local results.
 
 ## Test inventory
 
@@ -19,22 +22,54 @@ The first CI run failed before tests because the newer compiler requires explici
 | Independent Kiwi oracle | 192 | 7,344 add/remove/edit snapshots; raw hard residuals and weighted L1 objective; 768 pinned snapshots additionally compare unique values |
 | Upstream solver behavior | 10 | applicable behavior from the fixed Kiwi version, with precise exception assertions |
 | Public API / recovery | 22 | identity, independent solvers, reset, conflicts and continued use, duplicate/unknown operations, invalid inputs and weighted preferences |
+| Satisfaction assertions | 8 | required/soft residuals, empty solvers, finite nonnegative tolerance contract, invalid-input recovery |
+| Constraint inspection | 4 | relation, strength, required status and expression rendering |
+| Competing edits | 6 | compatible edits, minimums, tied optima, differing/custom weights, both suggestion orders and edit removal |
 | Numeric / tableau | 7 | overflow cannot look like zero violation, rollback after overflow, row substitution/copy, cancellation and pivot guard |
 | Public method compatibility | 1 | explicit equality/hash/debug methods usable by external callers |
-| **Total** | **232** | Actual test runner total, not the number of generated numeric literals |
+| Benchmark model | 2 | feasible resize and wraparound, clamping and subsequent expansion at 4/8/16 columns |
+| **Total** | **252** | Actual test runner total, not the number of generated numeric literals |
 
-The oracle uses fixed seed `0xC4550A` and Kiwi 1.4.9. It does not invoke MoonCassowary when producing expected answers. General underdetermined systems are not required to produce the same arbitrary variable values as Kiwi. The checked-in large fixture body is generated test data, not handwritten implementation size.
+The oracle uses fixed seed `0xC4550A` and Kiwi 1.4.9. It does not invoke MoonCassowary when producing expected answers. General underdetermined systems compare hard residuals and weighted objective, not an arbitrary unique solution. The checked-in large fixture body is generated test data, not handwritten implementation size.
 
-## Local and clean-checkout checks
+## Verified regressions
 
-Local toolchain: `moon 0.1.20260904`, `moonc v0.10.12+1634b282e`; Windows/MSVC. Core tests and actual builds were run in all three supported backends. The final public-method regression was additionally exercised in the CI matrix above.
+- **Benchmark model:** a new feasible-resize regression failed on the old model with `1200 != 1300` (exit 2). Removing the required fixed-width equality allows actual resizing; both benchmark regression tests now pass. Every measured edit checks the solved width, column sum, column minimums and required residuals. Setup/validation errors propagate instead of being printed as successful zero throughput.
+- **Edit semantics:** equal-strength conflicting edits minimize total weighted error; they imply neither first-write-wins nor last-write-wins. Both suggestion orders are checked for `left + right = 100` with requests 30 and 40, whose minimum combined edit error is 30. Removing an edit restores the remaining preference. Custom weights 2:1 select the stronger preference in either order. No tableau algorithm was changed for these tests.
+- **Panels:** the 40% list share is correctly described as soft. The demo asserts required residuals at each step and verifies actual resize/drag values and the clamped edit objective. Errors propagate out of `main`; floating-point sizes are no longer truncated to integers.
+- **Tolerance:** three new tests failed before the guard (exit 2), then passed with finite, nonnegative validation. NaN, both infinities and negative tolerances raise `InvalidNumber`; zero, negative zero and large finite tolerances are accepted. Rejected checks do not change the solver or prevent subsequent edits.
 
-A fresh clone from the public repository passed native strict checking, tests, and the split-pane example. This caught a Windows checkout issue: global Git `autocrlf` changed 36,839 fixture line endings to CRLF, making the byte-exact oracle checker report drift while normalized contents were identical. `.gitattributes` now fixes repository text to LF; the oracle's strict comparison is retained rather than relaxed.
+## Benchmark method and observations
+
+Run `moon run bench/main --target native --release`.
+
+Each sample creates a fresh model, warms it for 128 edits, then measures 2,000 edits on that persistent solver. There are three samples for each column count and scenario. Measured time **includes per-edit correctness validation and snapshot rollback overhead**, but excludes setup and warmup. It is not isolated simplex speed or a comparison with another library.
+
+- `feasible-resize`: requests cycle from 1200 through 1249.5, then back to 1200. The actual window and column sum follow every request.
+- `clamped-minimum`: requests stay below `40 * columns`; the actual layout stays at its hard minimum. This deliberately non-resizing workload is reported separately.
+- `@env.now()` returns Unix-epoch milliseconds, not a monotonic clock. A backwards reading fails before unsigned subtraction. Zero elapsed time reports `unavailable`, never a fabricated rate. Wall-clock adjustments, timer resolution and machine load limit these observations; no performance threshold gates CI.
+
+On the machine above, one completed release-mode run on 2026-09-30 recorded:
+
+| Columns | Feasible resize, 3 samples (ms) | Clamped minimum, 3 samples (ms) |
+|---|---|---|
+| 4 | 20, 24, 24 | 19, 20, 19 |
+| 8 | 29, 32, 32 | 31, 31, 31 |
+| 16 | 55, 55, 63 | 52, 54, 53 |
+
+Old 0.2.0 throughput numbers measured suggestions against a hard-fixed width. They are **not evidence of actual layout-resize throughput** and are superseded by this method. Values will vary across machines and runs.
 
 ## Runnable use cases
 
 - `moon run examples/equations`: two simultaneous equations, `x=7`, `y=3`.
-- `moon run examples/split_pane`: one persistent solver, seven updates, arbitrary linked variables plus minimum sizes and weighted edits. Requested width 400 produces width 496 to preserve required minimum sizes; hard residuals remain zero. Later expansion and dragging reuse the solver.
-- `moon run examples/recovery`: reject a contradictory hard constraint, then edit and remove normally; state is not poisoned by the failure.
+- `moon run examples/split_pane`: one persistent solver, seven updates. Requested width 400 produces width 496 to preserve required minimum sizes; later expansion and dragging reuse the solver.
+- `moon run examples/panels`: open at 1280, resize to 1024, drag sidebar to 500, then request an infeasibly narrow window. The drag produces main width 512, list approximately 204.8 and detail approximately 307.2. The narrow request solves to window 612 in this run. Maximum required residual over the run was approximately `1.14e-13`, below `1e-8`.
+- `moon run examples/recovery`: reject a contradictory hard constraint, then edit and remove normally; state is not poisoned by failure.
 
-No wall-time speedup, production adoption, or complete UI-framework claim is made. Snapshot rollback is deliberately O(tableau size) per operation. For source and algorithm boundaries, see `THIRD_PARTY_NOTICES.md` and `docs/ECOSYSTEM.md`.
+## Historical checks (not current release evidence)
+
+- [0.2.0 CI run 36686511364](https://github.com/sgy1023-crt/MoonCassowary/actions/runs/36686511364), commit `cec84ad`: 245 tests; predates the benchmark, panel and tolerance fixes above.
+- [Initial CI run 36445064001](https://github.com/sgy1023-crt/MoonCassowary/actions/runs/36445064001), commit `f4f9366`: 232 tests and three examples. The initial compiler failure was fixed by explicit `pub extend` declarations, not by disabling warnings.
+- A fresh public clone during 0.1.0 verification exposed Windows CRLF drift in generated fixtures. `.gitattributes` now fixes text to LF; the strict oracle comparison is retained.
+
+No cross-library speedup, production adoption, or complete UI-framework claim is made. Snapshot rollback is O(tableau size) per operation. Inspection and violation APIs do not extract minimal conflict sets. See `THIRD_PARTY_NOTICES.md` and `docs/ECOSYSTEM.md` for source and algorithm boundaries.
