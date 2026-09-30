@@ -83,6 +83,37 @@ pub fn Solver::has_constraint(self : Solver, constraint : Constraint) -> Bool {
 }
 
 ///|
+/// Largest absolute residual of every required constraint currently held.
+///
+/// A caller updating a layout can use this as a correctness assertion: a
+/// required relation is either satisfied (near zero) or the solver has a bug
+/// or a stale handle. Soft constraints are excluded because they are meant to
+/// be traded off.
+pub fn Solver::maximum_required_violation(
+  self : Solver,
+) -> Double raise SolverError {
+  let mut worst = 0.0
+  for _, entry in self.state.constraints {
+    if entry.constraint.strength == required() {
+      let violation = entry.constraint.violation(self)
+      if violation > worst {
+        worst = violation
+      }
+    }
+  }
+  worst
+}
+
+///|
+/// `true` when every required constraint is satisfied within `tolerance`.
+pub fn Solver::is_satisfied(
+  self : Solver,
+  tolerance? : Double = 1.0e-8,
+) -> Bool raise SolverError {
+  self.maximum_required_violation() <= tolerance
+}
+
+///|
 /// Register a variable that can be interactively suggested. Required strength
 /// is not allowed: a suggestion is a soft preference, not an assignment.
 pub fn Solver::add_edit_variable(
