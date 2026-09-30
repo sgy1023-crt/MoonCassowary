@@ -35,10 +35,10 @@ moon run bench/main --target native --release   # edits plus per-edit validation
 
 There are no third-party runtime dependencies. The library and examples support `wasm-gc`, `js`, and `native`; native builds require a C toolchain (MSVC on Windows is supported).
 
-To use the published library:
+To use the published [0.2.1 release](https://github.com/sgy1023-crt/MoonCassowary/releases/tag/v0.2.1):
 
 ```bash
-moon add sgy1023-crt/cassowary
+moon add sgy1023-crt/cassowary@0.2.1
 ```
 
 Import `"sgy1023-crt/cassowary" @cassowary` in your `moon.pkg`.

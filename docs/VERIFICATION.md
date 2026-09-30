@@ -2,6 +2,17 @@
 
 This records completed checks, not a prediction of competition acceptance.
 
+## Published 0.2.1 and remote verification
+
+- Release commit: `b1d014fe479081d17ced3d1b6f4541429e440a55`.
+- [Successful release CI 36698506212](https://github.com/sgy1023-crt/MoonCassowary/actions/runs/36698506212): all five jobs succeeded, including Ubuntu `wasm-gc` / `js` / `native`, Windows `native`, and reproducibility. Each target passes 252 tests and executes all four examples; both native jobs execute the checked release-mode benchmark.
+- `moon publish` returned **200 OK**, exit 0. `moon search sgy1023-crt/cassowary` confirms **0.2.1**.
+- [GitHub v0.2.1 Release](https://github.com/sgy1023-crt/MoonCassowary/releases/tag/v0.2.1) points to the exact release commit. The attached published package ZIP has SHA-256 `0ca9adc27c149bad80b8e12a823b85db20ca9af10f6f9c6eff68aee1fb69ddd7`; the GitHub asset digest matches the local archive. Its 43 file entries include the upstream license and no Git metadata, build directories or private configuration.
+- A new consumer outside the source checkout ran `moon add sgy1023-crt/cassowary@0.2.1`, which downloaded the registry dependency. Strict checking and **3/3 consumer tests passed on each of Wasm-GC, JavaScript and native**. Tests exercise editable/clamped widths, constraint inspection and removal, invalid tolerance errors with preserved state, tied edit objectives and recovery. The installed `solver.mbt` SHA-256 matches the release source: `7bd32ece05f5683093b54508adad5ef2abc3b9e1a42585e3c2ae250eb77a7758`.
+- [Historical v0.2.0 Release](https://github.com/sgy1023-crt/MoonCassowary/releases/tag/v0.2.0) was added at its original commit `cec84ad`, not at the later fixes.
+
+The first real upload encountered a transport/body error; registry search still returned 0.2.0. A retry completed with 200 OK, followed by the independent installation above. The CLI's dry run returned exit 255 despite a server response of `202 Accepted: Dry run completed successfully`; that dry run alone is **not** used as publication evidence. The initial consumer harness placed test-only imports in the normal import block; strict checking rejected unused imports. Moving them to `for "test"` fixed the harness without disabling warnings or changing the published library.
+
 ## Current local verification (2026-09-30)
 
 The fixes through `70fce82` passed the following checks on Windows 11 x64, Intel Core i5-12450H, MSVC, `moon 0.1.20260904` and `moonc v0.10.12+1634b282e`:
@@ -13,7 +24,7 @@ The fixes through `70fce82` passed the following checks on Windows 11 x64, Intel
 - `python tests/oracle/generate.py --check` passed with test-only `kiwisolver==1.4.9`; no fixture drift.
 - The release-mode native benchmark executed 18 samples with per-edit assertions enabled.
 
-The CI workflow now executes the asserted panels example on Ubuntu `wasm-gc` / `js` / `native` and Windows `native`, plus release-mode benchmarks on both native jobs. A successful run for the final release will be recorded separately after the push, not inferred from local results.
+The local checks above and the exact release CI are separate completed runs. Historical results below are retained as history, not substituted for the release's 252-test matrix.
 
 ## Test inventory
 
