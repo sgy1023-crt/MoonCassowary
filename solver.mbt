@@ -106,10 +106,15 @@ pub fn Solver::maximum_required_violation(
 
 ///|
 /// `true` when every required constraint is satisfied within `tolerance`.
+/// Tolerance must be finite and nonnegative; otherwise raises `InvalidNumber`.
+/// Zero requests an exact residual check. The solver is never mutated.
 pub fn Solver::is_satisfied(
   self : Solver,
   tolerance? : Double = 1.0e-8,
 ) -> Bool raise SolverError {
+  if !is_finite(tolerance) || tolerance < 0.0 {
+    raise InvalidNumber
+  }
   self.maximum_required_violation() <= tolerance
 }
 

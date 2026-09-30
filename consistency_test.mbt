@@ -74,7 +74,64 @@ test "tolerance is honored" {
     ),
   )
   assert_true(solver.is_satisfied(tolerance=0.0))
+  assert_true(solver.is_satisfied(tolerance=-0.0))
   assert_true(solver.is_satisfied(tolerance=1.0e-12))
+  assert_true(solver.is_satisfied(tolerance=1.0e308))
+}
+
+///|
+test "negative satisfaction tolerances are invalid even on an empty solver" {
+  let solver = @cassowary.Solver::new()
+  for tolerance in [-1.0, -1.0e-12] {
+    try ignore(solver.is_satisfied(tolerance~)) catch {
+      @cassowary.InvalidNumber => ()
+      _ => fail("expected InvalidNumber for negative tolerance")
+    } noraise {
+      _ => fail("negative tolerance must be rejected")
+    }
+  }
+}
+
+///|
+test "non-finite satisfaction tolerances are invalid" {
+  let solver = @cassowary.Solver::new()
+  for tolerance in [@double.not_a_number, @double.infinity, -@double.infinity] {
+    try ignore(solver.is_satisfied(tolerance~)) catch {
+      @cassowary.InvalidNumber => ()
+      _ => fail("expected InvalidNumber for non-finite tolerance")
+    } noraise {
+      _ => fail("non-finite tolerance must be rejected")
+    }
+  }
+}
+
+///|
+test "invalid tolerance checks leave a populated solver usable" {
+  let solver = @cassowary.Solver::new()
+  let x = @cassowary.Variable::new("x")
+  solver.add_edit_variable(x, @cassowary.strong())
+  solver.suggest_value(x, 42.0)
+  let before = solver.statistics()
+  for
+    tolerance in [
+      -1.0,
+      @double.not_a_number,
+      @double.infinity,
+      -@double.infinity,
+    ] {
+    try ignore(solver.is_satisfied(tolerance~)) catch {
+      @cassowary.InvalidNumber => ()
+      _ => fail("expected InvalidNumber")
+    } noraise {
+      _ => fail("invalid tolerance must not return a satisfaction result")
+    }
+    assert_eq(solver.statistics(), before)
+    assert_eq(solver.value(x), 42.0)
+    assert_true(solver.is_satisfied())
+  }
+  solver.suggest_value(x, 55.0)
+  assert_eq(solver.value(x), 55.0)
+  assert_true(solver.is_satisfied(tolerance=0.0))
 }
 
 ///|

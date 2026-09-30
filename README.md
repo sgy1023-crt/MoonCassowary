@@ -94,7 +94,7 @@ solver.suggest_value(x, 20.0)
 - `Solver::add_constraint`, `remove_constraint`, `has_constraint`.
 - `Solver::add_edit_variable`, `remove_edit_variable`, `has_edit_variable`, `suggest_value`.
 - `Solver::value`, `reset`, `statistics`.
-- `Solver::is_satisfied` and `maximum_required_violation`: assert a solved layout without re-deriving residuals by hand.
+- `Solver::is_satisfied` and `maximum_required_violation`: assert a solved layout without re-deriving residuals by hand. `is_satisfied(tolerance=...)` requires a finite, nonnegative tolerance (default `1e-8`); invalid tolerances raise `InvalidNumber`, and zero requests an exact residual check.
 - `Constraint::relation`, `strength`, `is_required`, `to_repr`: inspect a constraint, including one that was rejected as unsatisfiable.
 - `Expression::value` and `Constraint::violation`: inspect solved residuals; these can raise `InvalidNumber` or `NumericalFailure` rather than letting overflow/NaN look like a satisfied inequality.
 

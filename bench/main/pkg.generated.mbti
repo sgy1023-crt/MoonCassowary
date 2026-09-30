@@ -6,6 +6,7 @@ package "sgy1023-crt/cassowary/bench/main"
 // Errors
 
 // Types and methods
+type Columns
 
 // Type aliases
 
