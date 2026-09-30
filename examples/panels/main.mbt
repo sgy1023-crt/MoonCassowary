@@ -10,7 +10,7 @@
 //
 // Relationships a plain box model cannot express on its own:
 //   - the sidebar keeps a soft 1:3 proportion against the main area,
-//   - the mini list keeps a hard 40% share of the main area,
+//   - the mini list prefers a 40% share of the main area (soft),
 //   - every panel has a hard minimum,
 //   - dragging the sidebar is a suggestion, not an assignment.
 
@@ -25,12 +25,13 @@ fn report(
   solver : @cassowary.Solver,
   panels : Array[Panel],
   label : String,
-) -> Unit {
+) -> Unit raise {
+  assert_true(solver.is_satisfied())
   let mut line = "\{label}: "
   for panel in panels {
-    line += "\{panel.name}=\{solver.value(panel.handle).to_int()} "
+    line += "\{panel.name}=\{solver.value(panel.handle)} "
   }
-  let worst = solver.maximum_required_violation() catch { _ => -1.0 }
+  let worst = solver.maximum_required_violation()
   println("\{line}| required.max=\{worst}")
 }
 
@@ -104,29 +105,37 @@ fn main raise {
     ),
   )
 
-  // Window width and the sidebar divider are both interactive handles. They
-  // share one strength so that the most recent suggestion wins without either
-  // one silently stretching the other (cross-checked against Kiwi 1.4.9).
+  // Both edit handles can be satisfied when sufficient space remains. Equal
+  // strengths do not define write ordering when suggestions are incompatible.
   solver.add_edit_variable(window, @cassowary.strong())
   solver.add_edit_variable(sidebar, @cassowary.strong())
   solver.suggest_value(window, 1280.0)
+  assert_eq(solver.value(window), 1280.0)
   report(solver, panels, "open at 1280")
 
-  // A window resize keeps every relationship, including the nested ones.
+  // A window resize keeps every required relationship, including nested ones.
   solver.suggest_value(window, 1024.0)
+  assert_eq(solver.value(window), 1024.0)
   report(solver, panels, "resize to 1024")
 
-  // Dragging the sidebar competes with the 1:3 preference but cannot break a
-  // minimum: the 3:1 relation is soft, the minimums are required.
+  // The compatible drag and window suggestions outweigh the medium proportion.
   solver.suggest_value(sidebar, 500.0)
+  assert_eq(solver.value(window), 1024.0)
+  assert_eq(solver.value(sidebar), 500.0)
+  assert_eq(solver.value(main_area), 512.0)
+  assert_true((solver.value(list) - 204.8).abs() <= 1.0e-8)
+  assert_true((solver.value(detail) - 307.2).abs() <= 1.0e-8)
   report(solver, panels, "drag sidebar to 500")
 
-  // A window narrower than the required minimums cannot be honored.
+  // A window narrower than the required minimums cannot be honored. Check the
+  // hard bounds and minimum combined edit error, not an arbitrary tied optimum.
   solver.suggest_value(window, 300.0)
   solver.suggest_value(sidebar, 200.0)
+  assert_true(solver.value(window) >= 612.0 - 1.0e-8)
+  let edit_error = (solver.value(window) - 300.0).abs() +
+    (solver.value(sidebar) - 200.0).abs()
+  assert_true((edit_error - 332.0).abs() <= 1.0e-8)
   report(solver, panels, "shrink to 300")
   println("(the suggested width is a preference; required minimums win)")
-
-  let ok = solver.is_satisfied() catch { _ => false }
-  println("all required relationships hold: \{ok}")
+  println("all required relationships hold: true (asserted at every step)")
 }

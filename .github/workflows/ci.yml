@@ -42,10 +42,12 @@ jobs:
         run: moon run examples/split_pane --target ${{ matrix.target }}
       - name: Run recovery example
         run: moon run examples/recovery --target ${{ matrix.target }}
+      - name: Run asserted multi-panel layout example
+        run: moon run examples/panels --target ${{ matrix.target }}
 
-      - name: Run incremental edit benchmark
+      - name: Run checked incremental edit benchmark (release)
         if: matrix.target == 'native'
-        run: moon run bench/main --target native
+        run: moon run bench/main --target native --release
 
   reproducibility:
     runs-on: ubuntu-latest
