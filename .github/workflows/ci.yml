@@ -43,6 +43,10 @@ jobs:
       - name: Run recovery example
         run: moon run examples/recovery --target ${{ matrix.target }}
 
+      - name: Run incremental edit benchmark
+        if: matrix.target == 'native'
+        run: moon run bench/main --target native
+
   reproducibility:
     runs-on: ubuntu-latest
     steps:

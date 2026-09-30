@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Add `Solver::maximum_required_violation` and `Solver::is_satisfied` so callers can assert a solved layout without re-deriving residuals; 5 new tests (237 total).
+- Add a repeatable native benchmark for the incremental edit path (4/8/16 columns). Numbers are raw single-run measurements, not a comparison with Kiwi.
+- Run the benchmark in CI on native targets.
+
 ## 0.1.0
 
 - Port Kiwi 1.4.9's sparse tableau solver to MoonBit, including marker-based constraint removal, artificial-variable feasibility, primal and dual optimization, and edit suggestions.
