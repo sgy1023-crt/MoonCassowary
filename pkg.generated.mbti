@@ -36,7 +36,11 @@ pub struct Constraint {
   strength : Double
   // private fields
 }
+pub fn Constraint::is_required(Self) -> Bool
 pub fn Constraint::new(Expression, Relation, strength? : Double) -> Self
+pub fn Constraint::relation(Self) -> Relation
+pub fn Constraint::strength(Self) -> Double
+pub fn Constraint::to_repr(Self) -> String
 pub fn Constraint::violation(Self, Solver) -> Double raise SolverError
 
 pub struct Expression {

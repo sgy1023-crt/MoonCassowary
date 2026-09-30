@@ -49,6 +49,48 @@ pub fn Constraint::violation(
 }
 
 ///|
+/// The relation this constraint enforces.
+pub fn Constraint::relation(self : Constraint) -> Relation {
+  self.relation
+}
+
+///|
+/// The weight this constraint carries. `required()` means hard; anything lower
+/// participates in the weighted objective and can be traded off.
+pub fn Constraint::strength(self : Constraint) -> Double {
+  self.strength
+}
+
+///|
+/// `true` when this constraint cannot be traded off against preferences.
+pub fn Constraint::is_required(self : Constraint) -> Bool {
+  self.strength == required()
+}
+
+///|
+/// A readable rendering such as `1*x + -1*y + -10 = 0`, with `<=`/`>=` for
+/// inequalities. Useful in diagnostics and in failure messages.
+pub fn Constraint::to_repr(self : Constraint) -> String {
+  let terms : Array[String] = []
+  for variable, coefficient in self.expression.terms {
+    terms.push(
+      "\{if coefficient < 0.0 { "-" } else { "+" }} \{coefficient.abs()}*\{variable.name}",
+    )
+  }
+  let operator = match self.relation {
+    Equal => "="
+    LessEqual => "<="
+    GreaterEqual => ">="
+  }
+  let body = if terms.is_empty() {
+    "\{self.expression.constant}"
+  } else {
+    "\{terms.join(" ")} \{if self.expression.constant < 0.0 { "-" } else { "+" }} \{self.expression.constant.abs()}"
+  }
+  "\{body} \{operator} 0"
+}
+
+///|
 pub(all) suberror SolverError {
   DuplicateConstraint
   UnknownConstraint
