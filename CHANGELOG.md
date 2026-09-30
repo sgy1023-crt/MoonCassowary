@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.1 — 2026-09-30
 
 - Fix the benchmark's required fixed-width constraint so the feasible-resize scenario actually resizes. Validate solved widths, column sums, minimums and residuals on every edit; separate clamped scenarios, exclude setup/warmup and report three samples. Propagate failures and never fabricate zero-time throughput.
 - Correct equal-strength edit documentation and tests: compatible suggestions can both hold; conflicting suggestions minimize weighted L1 error and can have multiple optima. Add order-independent objective and custom-weight regressions.
