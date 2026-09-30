@@ -84,7 +84,7 @@ solver.suggest_value(x, 20.0)
 
 `examples/split_pane` keeps one solver while resizing the window and dragging the sidebar. It prints solved sizes, required-constraint residuals, and pivot counts. If the requested window is too narrow, minimum sizes win: the **suggested** width 400 becomes **solved** width 496 (= 160 + 16 + 320). `examples/recovery` demonstrates rejection of a contradictory hard constraint, followed by successful editing and removal on the same solver.
 
-`examples/panels` lays out four nested panels where the window width and the divider position are **two competing edit handles**. A divider drag moves the divider without stretching the window, and a window narrower than the required minimums is rejected in favor of the minimums. The strength allocation in it was cross-checked against Kiwi 1.4.9, which showed that equal strengths let the most recent suggestion win — a later suggestion at equal strength does **not** displace an edit that already holds a value.
+`examples/panels` lays out four nested panels with two edit handles: window width and sidebar width. When both suggestions are compatible with the hard structure and minimums, both can be satisfied. If they conflict, the weighted objective decides the trade-off. Equal strengths do **not** imply last-write-wins or first-write-wins: several solutions can have the same minimum cost. For example, with `left + right = 100` and equal-strength suggestions `left = 30`, `right = 40`, both `(30, 70)` and `(60, 40)` have total edit error 30. The panel proportions, including the list's 40% share, are soft preferences; panel minimums and sum relations are required.
 
 ## API and behavior
 
