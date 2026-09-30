@@ -28,7 +28,9 @@ moon check
 moon test
 moon run examples/equations
 moon run examples/split_pane
+moon run examples/panels
 moon run examples/recovery
+moon run bench/main --target native   # incremental edit throughput
 ```
 
 There are no third-party runtime dependencies. The library and examples support `wasm-gc`, `js`, and `native`; native builds require a C toolchain (MSVC on Windows is supported).
@@ -82,6 +84,8 @@ solver.suggest_value(x, 20.0)
 
 `examples/split_pane` keeps one solver while resizing the window and dragging the sidebar. It prints solved sizes, required-constraint residuals, and pivot counts. If the requested window is too narrow, minimum sizes win: the **suggested** width 400 becomes **solved** width 496 (= 160 + 16 + 320). `examples/recovery` demonstrates rejection of a contradictory hard constraint, followed by successful editing and removal on the same solver.
 
+`examples/panels` lays out four nested panels where the window width and the divider position are **two competing edit handles**. A divider drag moves the divider without stretching the window, and a window narrower than the required minimums is rejected in favor of the minimums. The strength allocation in it was cross-checked against Kiwi 1.4.9, which showed that equal strengths let the most recent suggestion win — a later suggestion at equal strength does **not** displace an edit that already holds a value.
+
 ## API and behavior
 
 - `Variable::new(name)`: identity-based variables; equal names do not alias.
@@ -90,6 +94,8 @@ solver.suggest_value(x, 20.0)
 - `Solver::add_constraint`, `remove_constraint`, `has_constraint`.
 - `Solver::add_edit_variable`, `remove_edit_variable`, `has_edit_variable`, `suggest_value`.
 - `Solver::value`, `reset`, `statistics`.
+- `Solver::is_satisfied` and `maximum_required_violation`: assert a solved layout without re-deriving residuals by hand.
+- `Constraint::relation`, `strength`, `is_required`, `to_repr`: inspect a constraint, including one that was rejected as unsatisfiable.
 - `Expression::value` and `Constraint::violation`: inspect solved residuals; these can raise `InvalidNumber` or `NumericalFailure` rather than letting overflow/NaN look like a satisfied inequality.
 
 Strengths: `required()` is hard; `strong()` = 1,000,000, `medium()` = 1,000, `weak()` = 1. Soft constraints minimize weighted L1 violations. These are **scalar weights, not infinite lexicographic priorities**: enough weak constraints can outweigh one strong constraint. Custom finite strengths in `[0, required()]` are accepted; an edit cannot be required.
@@ -109,7 +115,7 @@ Typed errors cover duplicate/unknown constraints and edit variables, unsatisfiab
 
 ## Tests and reproducibility
 
-**232 tests pass.** This includes 192 independent oracle scenarios with 7,344 checked operation snapshots and 768 uniquely determined snapshots, 10 upstream behavior ports, 22 API/recovery tests, 7 numeric/tableau regressions, and one public-method compatibility test. See [verification evidence](docs/VERIFICATION.md).
+**245 tests pass.** This includes 192 independent oracle scenarios with 7,344 checked operation snapshots and 768 uniquely determined snapshots, 10 upstream behavior ports, 22 API/recovery tests, 5 satisfaction-assertion tests, 4 constraint-inspection tests, 4 competing-edit tests, 7 numeric/tableau regressions, and one public-method compatibility test. See [verification evidence](docs/VERIFICATION.md).
 
 To reproduce oracle expectations:
 

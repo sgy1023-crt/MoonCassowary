@@ -1,10 +1,13 @@
 # Changelog
 
-## Unreleased
+## 0.2.0
 
-- Add `Solver::maximum_required_violation` and `Solver::is_satisfied` so callers can assert a solved layout without re-deriving residuals; 5 new tests (237 total).
-- Add a repeatable native benchmark for the incremental edit path (4/8/16 columns). Numbers are raw single-run measurements, not a comparison with Kiwi.
-- Run the benchmark in CI on native targets.
+- Add `Solver::maximum_required_violation` and `Solver::is_satisfied` so callers can assert a solved layout without re-deriving residuals.
+- Add `Constraint::relation`, `strength`, `is_required` and `to_repr`, so a rejected conflicting constraint can be inspected instead of only reported.
+- Add a four-panel nested layout example where a window resize and a divider drag are both suggestions competing against hard minimums.
+- Add four regression tests for competing edit variables, including strength ordering and what happens when one is removed. Every expectation in them was taken from Kiwi 1.4.9, not assumed; two initial assertions were corrected against upstream.
+- Add a repeatable native benchmark for the incremental edit path (4/8/16 columns) and run it in CI. Numbers are raw single-run measurements, not a comparison with Kiwi.
+- 245 tests total.
 
 ## 0.1.0
 
