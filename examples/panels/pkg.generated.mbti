@@ -1,0 +1,13 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "sgy1023-crt/cassowary/examples/panels"
+
+// Values
+
+// Errors
+
+// Types and methods
+type Panel
+
+// Type aliases
+
+// Traits
